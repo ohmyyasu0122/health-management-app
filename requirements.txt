@@ -8,7 +8,3 @@ python-dateutil
 google-api-python-client
 requests
 beautifulsoup4
-cd ~/Desktop/health-app
-git add requirements.txt
-git commit -m "Simplify requirements"
-git push
