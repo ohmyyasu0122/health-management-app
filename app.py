@@ -8,8 +8,8 @@ from utils.ml_predictor import HealthPredictor
 
 # ページ設定
 st.set_page_config(
-    page_title="健康管理アプリ",
-    page_icon="💪",
+    page_title="やすの健康アプリ",
+    page_icon="favicon.png",
     layout="wide",
     initial_sidebar_state="expanded"
 )
