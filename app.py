@@ -2,72 +2,9 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
-
-# NOTE: 以下のインポートは、ユーザーの元のコードに合わせていますが、
-# 実行可能にするために一時的にモッククラスに置き換えています。
-# 実際のアプリケーションでは、元のインポートを使用してください。
-# from utils.firebase_handler import FirebaseHandler
-# from utils.auth import check_password, logout
-# from utils.ml_predictor import HealthPredictor
-
-# --- モッククラス (実際のアプリケーションでは元のインポートを使用) ---
-class FirebaseHandler:
-    def get_weight_data(self):
-        dates = [datetime.now().date() - timedelta(days=i) for i in range(40, 0, -1)]
-        weights = [75.0 - i * 0.1 + (i % 5) * 0.2 for i in range(40)]
-        return pd.DataFrame({'date': pd.to_datetime(dates), 'weight': weights})
-
-    def get_gym_data(self):
-        dates = [datetime.now().date() - timedelta(days=i) for i in range(40, 0, -1)]
-        gym_status = [True if i % 3 == 0 else False for i in range(40)]
-        return pd.DataFrame({'date': pd.to_datetime(dates), 'went_to_gym': gym_status})
-
-    def get_calorie_data(self):
-        dates = [datetime.now().date() - timedelta(days=i) for i in range(40, 0, -1)]
-        calories = [2000 + (i % 7) * 50 - (i % 3) * 20 for i in range(40)]
-        return pd.DataFrame({'date': pd.to_datetime(dates), 'calories': calories})
-
-    def get_user_settings(self):
-        return {'weight_goal': 70.0, 'calorie_goal': 2000, 'password': 'yasu0122'}
-
-    def calculate_consecutive_gym_days(self):
-        return 10 # モック値
-
-    def save_weight(self, date, weight):
-        st.success(f"Mock: Weight {weight} saved for {date}")
-
-    def save_gym_record(self, date, went_to_gym):
-        st.success(f"Mock: Gym status {went_to_gym} saved for {date}")
-
-    def save_calorie_record(self, date, calories):
-        st.success(f"Mock: Calories {calories} saved for {date}")
-
-    def update_user_settings(self, settings):
-        st.success(f"Mock: Settings updated: {settings}")
-
-class HealthPredictor:
-    def __init__(self, weight_df, gym_df, calorie_df):
-        pass # モックなので実際のロジックは不要
-
-    def get_daily_advice(self):
-        return {
-            'advice': "今日のAIアドバイス: 体重は順調に減少傾向です！この調子で運動と食事のバランスを保ちましょう。特に、週末の活動量を少し増やすと、さらに効果的かもしれません。",
-            'recipes': {
-                'category': '低カロリー',
-                'recipes': [
-                    {'title': '鶏むね肉と野菜のヘルシー蒸し', 'url': 'https://example.com/recipe1', 'snippet': '高タンパク低脂質で満足感のある一品。'},
-                    {'title': '豆腐とわかめの中華スープ', 'url': 'https://example.com/recipe2', 'snippet': '体を温め、代謝アップをサポート。'}
-                ]
-            }
-        }
-
-def check_password():
-    return True # モックなので常に認証済み
-
-def logout():
-    st.info("Mock: Logged out.")
-# --- モッククラスここまで ---
-
+from utils.firebase_handler import FirebaseHandler
+from utils.auth import check_password, logout
+from utils.ml_predictor import HealthPredictor
 
 # ページ設定
 st.set_page_config(
@@ -77,203 +14,25 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- カスタムCSS (ここを大幅に変更します) ---
+# カスタムCSS
 st.markdown("""
 <style>
-    /* 全体的なフォントと背景 */
-    body {
-        font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-        background-color: #f8f9fa; /* 非常に薄いグレーの背景 */
-        color: #333333; /* 基本の文字色 */
-    }
-    
-    /* Streamlitのメインコンテナのパディング調整 */
-    .main .block-container {
-        padding-top: 2rem;
-        padding-right: 2rem;
-        padding-left: 2rem;
-        padding-bottom: 2rem;
-    }
-
-    /* メインタイトル */
     .main-title {
-        font-size: 2.8rem; /* 少し大きく */
-        font-weight: 700; /* より太く */
-        color: #20c997; /* 新しいメインカラー (ティールグリーン) */
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #1f77b4;
         text-align: center;
-        margin-bottom: 2rem; /* 下の余白を増やす */
-        padding-bottom: 0.5rem;
-        border-bottom: 3px solid #e0f2f7; /* 下線を追加 */
-    }
-
-    /* ジムの称号 */
-    .gym-title {
-        font-size: 1.6rem; /* 少し小さく */
-        font-weight: 600;
-        color: #ffffff; /* 白文字 */
-        text-align: center;
-        padding: 1.2rem;
-        background: linear-gradient(45deg, #20c997, #00b894); /* グラデーションを調整 */
-        border-radius: 12px; /* 角を丸く */
-        margin-bottom: 2.5rem; /* 下の余白を増やす */
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* 影を追加 */
-    }
-    .gym-title strong {
-        color: #ffffff; /* 強調文字も白 */
-    }
-
-    /* カードスタイルのコンテナ */
-    .stContainer {
-        background-color: #ffffff; /* 白い背景 */
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* 影を少し強く */
-        padding: 1.5rem;
-        margin-bottom: 1.5rem; /* 各カードの下に余白 */
-    }
-
-    /* メトリクス */
-    .stMetric {
-        background-color: #ffffff;
-        border-radius: 8px;
-        padding: 1rem;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
-        border: 1px solid #e0f2f7; /* 軽いボーダー */
-        text-align: center;
-    }
-    .stMetric > div:first-child { /* ラベル */
-        font-size: 0.9rem;
-        color: #6c757d;
-        margin-bottom: 0.5rem;
-    }
-    .stMetric > div:nth-child(2) { /* 値 */
-        font-size: 1.8rem;
-        font-weight: 700;
-        color: #333333;
-    }
-    .stMetric > div:nth-child(3) { /* 変化量/目標 */
-        font-size: 1rem;
-        color: #6c757d;
-    }
-
-    /* ボタン */
-    .stButton > button {
-        background-color: #20c997; /* メインカラー */
-        color: white;
-        border-radius: 8px; /* 角を丸く */
-        border: none;
-        padding: 0.6rem 1.2rem;
-        font-size: 1rem;
-        font-weight: 600;
-        transition: background-color 0.2s, transform 0.2s;
-    }
-    .stButton > button:hover {
-        background-color: #00b894; /* ホバー時の色 */
-        transform: translateY(-2px); /* 少し浮き上がる */
-    }
-    .stButton > button:active {
-        transform: translateY(0);
-    }
-
-    /* Expander */
-    .stExpander {
-        border: 1px solid #e0f2f7;
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        margin-bottom: 1.5rem;
-    }
-    .stExpander > div:first-child { /* Expander header */
-        background-color: #f0f4f8; /* 軽い背景色 */
-        border-radius: 10px 10px 0 0;
-        padding: 0.8rem 1.2rem;
-        font-weight: 600;
-        color: #333333;
-    }
-    .stExpander > div:nth-child(2) { /* Expander content */
-        padding: 1.2rem;
-    }
-
-    /* Sidebar */
-    .css-1d391kg { /* Streamlit sidebar class */
-        background-color: #ffffff; /* サイドバーの背景を白に */
-        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
-    }
-    .sidebar .stRadio > label {
-        font-size: 1.1rem;
-        padding: 0.5rem 0;
-    }
-    .sidebar .stRadio > label > div:first-child {
-        color: #333333;
-    }
-    .sidebar .stRadio > label > div:first-child:hover {
-        color: #20c997;
-    }
-    .sidebar .stButton > button {
-        background-color: #dc3545; /* ログアウトボタンは赤系 */
-    }
-    .sidebar .stButton > button:hover {
-        background-color: #c82333;
-    }
-
-    /* Info/Warning messages */
-    .stAlert {
-        border-radius: 8px;
-    }
-    .stAlert.info {
-        background-color: #e0f2f7; /* 薄い青 */
-        color: #007bff;
-        border-left: 5px solid #007bff;
-    }
-    .stAlert.warning {
-        background-color: #fff3cd; /* 薄い黄色 */
-        color: #856404;
-        border-left: 5px solid #ffc107;
-    }
-    .stAlert.success {
-        background-color: #d4edda; /* 薄い緑 */
-        color: #28a745;
-        border-left: 5px solid #28a745;
-    }
-
-    /* Dataframe */
-    .stDataFrame {
-        border-radius: 10px;
-        overflow: hidden; /* 角丸を適用 */
-    }
-    .stDataFrame table {
-        border-collapse: collapse;
-    }
-    .stDataFrame th {
-        background-color: #f0f4f8;
-        color: #333333;
-        font-weight: 600;
-    }
-    .stDataFrame td {
-        background-color: #ffffff;
-    }
-    .stDataFrame tr:nth-child(even) td {
-        background-color: #f8f9fa; /* 縞模様 */
-    }
-
-    /* Input fields */
-    .stNumberInput, .stTextInput, .stDateInput, .stSelectbox {
         margin-bottom: 1rem;
     }
-    .stNumberInput > div > div > input,
-    .stTextInput > div > div > input,
-    .stDateInput > div > div > input,
-    .stSelectbox > div > div > div > div {
-        border-radius: 8px;
-        border: 1px solid #ced4da;
-        padding: 0.5rem 0.75rem;
+    .gym-title {
+        font-size: 1.8rem;
+        color: #ff7f0e;
+        text-align: center;
+        padding: 1rem;
+        background: linear-gradient(90deg, #f0f0f0, #ffffff);
+        border-radius: 10px;
+        margin-bottom: 2rem;
     }
-    .stNumberInput > div > div > input:focus,
-    .stTextInput > div > div > input:focus,
-    .stDateInput > div > div > input:focus,
-    .stSelectbox > div > div > div > div:focus {
-        border-color: #20c997;
-        box-shadow: 0 0 0 0.2rem rgba(32, 201, 151, 0.25);
-    }
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -326,8 +85,6 @@ def main_page():
     )
     
     # AI提案
-    # AIアドバイスセクションをカードで囲む
-    st.markdown('<div class="stContainer">', unsafe_allow_html=True)
     if len(weight_df) >= 30:
         with st.expander("🤖 今日のAIアドバイス", expanded=True):
             predictor = HealthPredictor(weight_df, gym_df, calorie_df)
@@ -340,7 +97,7 @@ def main_page():
                 st.markdown(f"### 🍽️ おすすめレシピ ({result['recipes']['category']})")
                 
                 for recipe in result['recipes']['recipes']:
-                    with st.container(): # 各レシピもコンテナで囲むことで、将来的なスタイリングが容易になります
+                    with st.container():
                         col1, col2 = st.columns([3, 1])
                         with col1:
                             st.markdown(f"**[{recipe['title']}]({recipe['url']})**")
@@ -351,14 +108,11 @@ def main_page():
     else:
         days_left = 30 - len(weight_df)
         st.info(f"📊 AIアドバイスまであと**{days_left}日**です。毎日記録を続けましょう!")
-    st.markdown('</div>', unsafe_allow_html=True) # AIアドバイスセクションの終わり
     
     # 期間選択
-    st.markdown('<div class="stContainer">', unsafe_allow_html=True)
-    st.subheader("📅 表示期間の選択")
     col1, col2, col3 = st.columns(3)
     with col1:
-        period = st.selectbox("表示期間", ["週", "月", "年"], key="period_select", label_visibility="collapsed")
+        period = st.selectbox("表示期間", ["週", "月", "年"], key="period_select")
     
     # 期間に応じたデータフィルタリング
     today = datetime.now().date()
@@ -372,11 +126,8 @@ def main_page():
     filtered_weight = weight_df[weight_df['date'] >= pd.Timestamp(start_date)]
     filtered_gym = gym_df[gym_df['date'] >= pd.Timestamp(start_date)]
     filtered_calorie = calorie_df[calorie_df['date'] >= pd.Timestamp(start_date)]
-    st.markdown('</div>', unsafe_allow_html=True) # 期間選択セクションの終わり
-
+    
     # メトリクス表示
-    st.markdown('<div class="stContainer">', unsafe_allow_html=True)
-    st.subheader("📈 現在の状況")
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
@@ -403,21 +154,19 @@ def main_page():
         avg_calories = filtered_calorie['calories'].mean() if not filtered_calorie.empty else 0
         calorie_goal = settings.get('calorie_goal', 2000)
         st.metric("平均消費カロリー", f"{avg_calories:.0f} kcal", f"目標: {calorie_goal} kcal")
-    st.markdown('</div>', unsafe_allow_html=True) # メトリクスセクションの終わり
-
+    
     # グラフ表示
-    st.markdown('<div class="stContainer">', unsafe_allow_html=True)
     if not filtered_weight.empty:
         fig = go.Figure()
         
-        # 体重ライン (色を新しいテーマに合わせる)
+        # 体重ライン
         fig.add_trace(go.Scatter(
             x=filtered_weight['date'],
             y=filtered_weight['weight'],
             mode='lines+markers',
             name='体重',
-            line=dict(color='#20c997', width=3), # メインカラー
-            marker=dict(size=8, color='#20c997'),
+            line=dict(color='#1f77b4', width=3),
+            marker=dict(size=8),
             hovertemplate='<b>日付</b>: %{x|%Y-%m-%d}<br><b>体重</b>: %{y:.1f} kg<extra></extra>'
         ))
         
@@ -427,7 +176,7 @@ def main_page():
             y=[weight_goal] * len(filtered_weight),
             mode='lines',
             name='目標体重',
-            line=dict(color='#fd7e14', width=2, dash='dash'), # アクセントカラー (オレンジ系)
+            line=dict(color='red', width=2, dash='dash'),
             hovertemplate='<b>目標</b>: %{y:.1f} kg<extra></extra>'
         ))
         
@@ -450,9 +199,9 @@ def main_page():
                 name='ジム',
                 marker=dict(
                     size=15,
-                    color='#17a2b8', # 別のアクセントカラー (水色系)
+                    color='green',
                     symbol='star',
-                    line=dict(color='#138496', width=2)
+                    line=dict(color='darkgreen', width=2)
                 ),
                 hovertemplate='<b>ジムに行った日</b><br>%{x|%Y-%m-%d}<extra></extra>'
             ))
@@ -460,7 +209,7 @@ def main_page():
         fig.update_layout(
             title=dict(
                 text="体重推移グラフ",
-                font=dict(size=24, color='#333333') # タイトル色も調整
+                font=dict(size=24, color='#1f77b4')
             ),
             xaxis_title="日付",
             yaxis_title="体重 (kg)",
@@ -473,10 +222,7 @@ def main_page():
                 y=1.02,
                 xanchor="right",
                 x=1
-            ),
-            plot_bgcolor='#ffffff', # グラフの背景色
-            paper_bgcolor='#ffffff', # 全体の背景色
-            font=dict(family='Segoe UI', color='#333333') # グラフ内のフォント
+            )
         )
         
         st.plotly_chart(fig, use_container_width=True)
@@ -512,7 +258,6 @@ def main_page():
             st.dataframe(display_df, use_container_width=True, hide_index=True)
     else:
         st.info("📝 データがまだありません。データ入力画面から記録を始めましょう!")
-    st.markdown('</div>', unsafe_allow_html=True) # グラフセクションの終わり
 
 # データ入力画面
 def input_page():
@@ -546,8 +291,7 @@ def input_page():
     default_gym = today_gym.iloc[0]['went_to_gym'] if not today_gym.empty else False
     default_calorie = int(today_calorie.iloc[0]['calories']) if not today_calorie.empty else 0
     
-    st.markdown('<div class="stContainer">', unsafe_allow_html=True) # 入力フォームをカードで囲む
-    st.markdown("### 記録するデータ")
+    st.markdown("---")
     
     col1, col2 = st.columns(2)
     
@@ -577,6 +321,8 @@ def input_page():
         help="今日の総消費カロリーを入力"
     )
     
+    st.markdown("---")
+    
     col1, col2, col3 = st.columns([1, 1, 1])
     
     with col2:
@@ -592,7 +338,6 @@ def input_page():
                     st.error(f"❌ エラーが発生しました: {str(e)}")
             else:
                 st.warning("⚠️ 体重を入力してください")
-    st.markdown('</div>', unsafe_allow_html=True) # 入力フォームのカードの終わり
 
 # 設定画面
 def settings_page():
@@ -600,7 +345,6 @@ def settings_page():
     
     settings = fb.get_user_settings()
     
-    st.markdown('<div class="stContainer">', unsafe_allow_html=True) # 目標設定をカードで囲む
     st.markdown("### 🎯 目標設定")
     
     col1, col2 = st.columns(2)
@@ -622,9 +366,8 @@ def settings_page():
             value=int(settings.get('calorie_goal', 2000)),
             step=100
         )
-    st.markdown('</div>', unsafe_allow_html=True) # 目標設定のカードの終わり
-
-    st.markdown('<div class="stContainer">', unsafe_allow_html=True) # パスワード変更をカードで囲む
+    
+    st.markdown("---")
     st.markdown("### 🔐 パスワード変更")
     
     new_password = st.text_input(
@@ -632,7 +375,8 @@ def settings_page():
         type="password",
         help="パスワードを変更する場合は入力してください"
     )
-    st.markdown('</div>', unsafe_allow_html=True) # パスワード変更のカードの終わり
+    
+    st.markdown("---")
     
     col1, col2, col3 = st.columns([1, 1, 1])
     
