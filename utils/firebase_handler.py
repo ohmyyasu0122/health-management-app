@@ -43,7 +43,7 @@ class FirebaseHandler:
             'date': date_str,
             'weight': weight,
             'timestamp': firestore.SERVER_TIMESTAMP
-        })
+        }, merge=True)
     
     def get_weight_data(self, start_date=None, end_date=None):
         query = self.db.collection('weight').order_by('date')
@@ -89,7 +89,7 @@ class FirebaseHandler:
             'date': date_str,
             'went_to_gym': went_to_gym,
             'timestamp': firestore.SERVER_TIMESTAMP
-        })
+        }, merge=True)
     
     def get_gym_data(self, start_date=None, end_date=None):
         query = self.db.collection('gym').order_by('date')
@@ -116,7 +116,7 @@ class FirebaseHandler:
             'date': date_str,
             'calories': calories,
             'timestamp': firestore.SERVER_TIMESTAMP
-        })
+        }, merge=True)
     
     def get_calorie_data(self, start_date=None, end_date=None):
         query = self.db.collection('calories').order_by('date')
