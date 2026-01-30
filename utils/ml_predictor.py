@@ -67,9 +67,9 @@ class HealthPredictor:
             advice_parts.append("🏆 **素晴らしいジム習慣です!**\n- 継続は力なり!\n- タンパク質をしっかり摂取しましょう")
         
         # カロリー
-        if avg_calories > 2500:
-            advice_parts.append("🍽️ **消費カロリーが高めです**\n- 食事の質を見直しましょう\n- 加工食品を減らして自炊を増やす")
-        elif avg_calories < 1500:
+        if avg_calories > 800:
+            advice_parts.append("🍽️ **消費カロリーが高めです**\n- このまま頑張りましょう！\n- プロテインもしっかり摂取する")
+        elif avg_calories < 200:
             advice_parts.append("⚡ **消費カロリーが少なめです**\n- 適度な運動で代謝を上げましょう\n- 筋トレで筋肉量を増やす")
         
         return "\n\n".join(advice_parts)

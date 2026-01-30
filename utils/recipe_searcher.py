@@ -136,7 +136,7 @@ class RecipeSearcher:
         elif gym_rate >= 0.5:
             query = "高タンパク 筋トレ 食事 レシピ"
             category = "筋肉増強"
-        elif avg_calories < 1500:
+        elif avg_calories < 200:
             query = "代謝アップ バランス 栄養 レシピ"
             category = "代謝改善"
         else:
